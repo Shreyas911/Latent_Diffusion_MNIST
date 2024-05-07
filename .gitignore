@@ -1,2 +1,7 @@
 **/__pycache__
 **/.ipynb_checkpoints
+**/*.sh
+**/*.pth
+**/*.out
+**/data
+**/contents
