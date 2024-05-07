@@ -68,3 +68,36 @@ class Trainer:
                 # plt.imshow(grid_np)
                 # plt.axis('off')
                 # plt.show()
+
+    @beartype
+    def train_with_context(self) -> None:
+
+        for i in range(self.n_epochs):
+            self.model.train()
+            pbar = tqdm(self.train_loader)
+            loss_ema = None
+            for x, c in pbar:
+                self.optimizer.zero_grad()
+                loss = self.model(x,c)
+                loss.backward()
+                if loss_ema is None:
+                    loss_ema = loss.item()
+                else:
+                    loss_ema = 0.9 * loss_ema + 0.1 * loss.item()
+                pbar.set_description(f"loss: {loss_ema:.4f}")
+                self.optimizer.step()
+
+            self.model.eval()
+
+            # save model
+            torch.save(self.model.state_dict(), f"./{self.model_name}_mnist.pth")
+
+            with torch.no_grad():
+                xh = self.model.sample(n_samples = 16, 
+                                       size      = (1, 28, 28))
+                grid = make_grid(xh, nrow=4)
+                save_image(grid, f"./contents/{self.model_name}_sample_{i}.png")
+                # grid_np = TF.to_pil_image(grid)
+                # plt.imshow(grid_np)
+                # plt.axis('off')
+                # plt.show()

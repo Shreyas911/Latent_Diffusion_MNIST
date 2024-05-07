@@ -44,39 +44,18 @@ if __name__ == "__main__":
 
     dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=20)
 
-    ## Without time or context embeddings
-    # unet = UNetVanilla(n_channel = 1)
-    # ddpm = DDPMNoTimeEmbedding(nn_eps = unet,
-    #                            betas  = (1.e-4,0.02),
-    #                            n_T    = 1000,
-    #                            beta_schedule = linear_schedule,
-    #                            criterion = nn.MSELoss())
-    ## With time and context embeddings
-    unet = ContextUNet(in_channels = 1, 
-                       n_feat     = 256, 
-                       n_classes  = 10,
-                       is_res = True)
-    ddpm = DDPMTimeContextEmbed(nn_eps = unet,
-                                betas  = (1.e-4,0.02),
-                                n_T    = 1000,
-                                beta_schedule = linear_schedule,
-                                criterion = nn.MSELoss(),
-                                drop_prob = 0.1)
+    unet = UNetVanilla(n_channel = 1)
+    ddim = DDIMNoTimeEmbedding(nn_eps = unet,
+                               betas  = (1.e-4,0.02),
+                               n_T    = 1000,
+                               beta_schedule = linear_schedule,
+                               criterion = nn.MSELoss())
+    optim = torch.optim.Adam(ddim.parameters(), lr=2e-4)
 
-    optim = torch.optim.Adam(ddpm.parameters(), lr=2e-4)
-
-    ## Without time or context embeddings
-    # trainer = Trainer(model        = ddpm,
-    #                   train_loader = dataloader,
-    #                   optimizer    = optim, 
-    #                   n_epochs     = 100,
-    #                   model_name   = './ddpm_mnist')
-    # trainer.train()
-
-    ## With time and context embeddings
-    trainer = Trainer(model        = ddpm,
+    trainer = Trainer(model        = ddim,
                       train_loader = dataloader,
                       optimizer    = optim, 
                       n_epochs     = 100,
-                      model_name   = './ddpm_with_context_mnist')
-    trainer.train_with_context()
+                      model_name   = './ddim_mnist')
+
+    trainer.train()
